@@ -15,13 +15,9 @@ public class FPSController : MonoBehaviour
     private float rotY = 0f;
 
     // Controls
-    [SerializeField]
     private bool up;
-    [SerializeField]
     private bool down;
-    [SerializeField]
     private bool left;
-    [SerializeField]
     private bool right;
 
     void Start()
