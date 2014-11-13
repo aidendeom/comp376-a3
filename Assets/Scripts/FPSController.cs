@@ -19,18 +19,20 @@ public class FPSController : MonoBehaviour
     private bool down;
     private bool left;
     private bool right;
+    private bool space;
+    private bool ctrl;
 
     void Start()
     {
         transform = GetComponent<Transform>();
         rigidbody = GetComponent<Rigidbody>();
-
-        Screen.lockCursor = true;
     }
 
 
     void Update()
     {
+        Screen.lockCursor = true;
+
         UpdateInputs();
         UpdateRotation();
     }
@@ -46,6 +48,8 @@ public class FPSController : MonoBehaviour
         down = Input.GetKey(KeyCode.S);
         left = Input.GetKey(KeyCode.A);
         right = Input.GetKey(KeyCode.D);
+        space = Input.GetKey(KeyCode.Space);
+        ctrl = Input.GetKey(KeyCode.LeftControl);
     }
 
     private void UpdatePosition()
@@ -68,6 +72,15 @@ public class FPSController : MonoBehaviour
         else if (right && !left)
         {
             moveDirection += transform.right;
+        }
+
+        if (space && !ctrl)
+        {
+            moveDirection += transform.up;
+        }
+        else if (ctrl && !space)
+        {
+            moveDirection -= transform.up;
         }
 
         moveDirection.Normalize();
