@@ -7,6 +7,7 @@ public class ClusterSpawner : MonoBehaviour
 
     public void Spawn(GameObject go)
     {
-        Instantiate(go, SpawnAnchor.position, SpawnAnchor.rotation);
+        var b = (GameObject)Instantiate(go, SpawnAnchor.position, SpawnAnchor.rotation);
+        b.rigidbody.velocity = SpawnAnchor.up * UnityEngine.Random.Range(10f, 30f);
     }
 }

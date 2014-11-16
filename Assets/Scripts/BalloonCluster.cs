@@ -28,7 +28,31 @@ public class BalloonCluster : MonoBehaviour
 
     void FixedUpdate()
     {
-        rigidbody.velocity = Vector3.ClampMagnitude(rigidbody.velocity * speedMult, 10f);
+        Vector3 newVel = Vector3.ClampMagnitude(rigidbody.velocity, 30f);
+
+        if (GameController.Fast)
+        {
+            newVel *= 1.5f;
+        }
+
+        rigidbody.velocity = newVel;
+
+    }
+
+    void OnCollisionEnter(Collision c)
+    {
+        var h = c.gameObject.GetComponent<Health>();
+        if (c.gameObject.tag == "Player" && h != null)
+        {
+            Health.DamageArgs args = new Health.DamageArgs
+            {
+                amount = 100,
+                point = c.contacts[0].point,
+                normal = c.contacts[0].normal
+            };
+            h.TakeDamage(args);
+            Pop();
+        }
     }
 
     void OnTakeDamage(Health.DamageArgs args)
@@ -49,8 +73,8 @@ public class BalloonCluster : MonoBehaviour
             c1.transform.position += randomDirection * c1.collider.bounds.extents.x;
             c2.transform.position += -randomDirection * c2.collider.bounds.extents.x;
 
-            c1.rigidbody.velocity = randomDirection * UnityEngine.Random.Range(1f, 5f);
-            c2.rigidbody.velocity = -randomDirection * UnityEngine.Random.Range(1f, 5f);
+            c1.rigidbody.velocity = randomDirection * UnityEngine.Random.Range(10f, 30f);
+            c2.rigidbody.velocity = -randomDirection * UnityEngine.Random.Range(10f, 30f);
         }
 
         if (BalloonPoppedEventGlobal != null)

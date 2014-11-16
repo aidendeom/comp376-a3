@@ -21,6 +21,7 @@ public class Health : MonoBehaviour
     public int MaxHealth = 100;
     public int CurrentHealth { get; private set; }
     public bool Dead { get; private set; }
+    public bool Alive { get { return !Dead; } }
 
     public OnKilledDelegate OnKilled = null;
     public OnTakeDamageDelegate OnTakeDamage = null;

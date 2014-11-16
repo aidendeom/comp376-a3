@@ -11,6 +11,7 @@ public class WeaponController : MonoBehaviour
     public int Damage = 1;
     public Texture CrosshairTexture = null;
 
+
     private float SecondsPerShot
     {
         get { return 1 / RoF; }
@@ -65,6 +66,12 @@ public class WeaponController : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void StopAnims()
+    {
+        RightGun.SetBool("Shoot", false);
+        LeftGun.SetBool("Shoot", false);
     }
 
     void OnGUI()
