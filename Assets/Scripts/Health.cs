@@ -3,8 +3,19 @@ using System.Collections;
 
 public class Health : MonoBehaviour
 {
+    public struct DamageArgs
+    {
+        public int amount;
+
+        // Point at which the damage happened
+        public Vector3 point;
+        // Normal from that point
+        public Vector3 normal;
+    }
+
     // Health related delegates
     public delegate void OnKilledDelegate();
+    public delegate void OnTakeDamageDelegate(DamageArgs args);
 
     // Members
     public int MaxHealth = 100;
@@ -12,6 +23,7 @@ public class Health : MonoBehaviour
     public bool Dead { get; private set; }
 
     public OnKilledDelegate OnKilled = null;
+    public OnTakeDamageDelegate OnTakeDamage = null;
 
     void Start()
     {
@@ -19,12 +31,13 @@ public class Health : MonoBehaviour
         Dead = false;
     }
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(DamageArgs args)
     {
         int previousHealth = CurrentHealth;
-        CurrentHealth -= amount;
+        CurrentHealth -= args.amount;
 
-        Debug.Log(string.Format("{0} damaged. {1} -> {2}", gameObject.name, previousHealth, CurrentHealth));
+        if (OnTakeDamage != null)
+            OnTakeDamage(args);
 
         if (CurrentHealth <= 0 && previousHealth > 0)
         {

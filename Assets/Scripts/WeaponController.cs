@@ -9,6 +9,7 @@ public class WeaponController : MonoBehaviour
     public Transform ShootTransform = null;
     public float RoF = 10;
     public int Damage = 1;
+    public Texture CrosshairTexture = null;
 
     private float SecondsPerShot
     {
@@ -33,7 +34,7 @@ public class WeaponController : MonoBehaviour
         {
             int layerMask = 1 << LayerMask.NameToLayer("Balloon");
 
-            var hits = Physics.RaycastAll(ShootTransform.position, ShootTransform.forward, 10000f, layerMask);
+            var hits = Physics.RaycastAll(ShootTransform.position, ShootTransform.forward, Mathf.Infinity, layerMask);
 
             if (hits.Length > 0)
             {
@@ -49,11 +50,35 @@ public class WeaponController : MonoBehaviour
 
                 // This is the first balloon hit
                 var hit = hits[0];
-
                 var health = hit.collider.GetComponent<Health>();
+
                 if (health != null)
-                    health.TakeDamage(Damage);
+                {
+                    Health.DamageArgs args = new Health.DamageArgs()
+                    {
+                        amount = Damage,
+                        point = hit.point,
+                        normal = hit.normal
+                    };
+
+                    health.TakeDamage(args);
+                }
             }
         }
+    }
+
+    void OnGUI()
+    {
+        int screenWidth = Screen.width;
+        int screenHeight = Screen.height;
+
+        float x = screenWidth / 2f - CrosshairTexture.width / 2f;
+        float y = screenHeight / 2f - CrosshairTexture.height / 2f;
+        float w = CrosshairTexture.width;
+        float h = CrosshairTexture.height;
+
+        Rect pos = new Rect(x, y, w, h);
+
+        GUI.DrawTexture(pos, CrosshairTexture);
     }
 }
