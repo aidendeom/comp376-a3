@@ -11,6 +11,8 @@ public class WeaponController : MonoBehaviour
     public int Damage = 1;
     public Texture CrosshairTexture = null;
 
+    private int layerMask = 1 << LayerMask.NameToLayer("Balloon")
+        | 1 << LayerMask.NameToLayer("HAB");
 
     private float SecondsPerShot
     {
@@ -33,8 +35,6 @@ public class WeaponController : MonoBehaviour
 
         if (shoot && CanShoot)
         {
-            int layerMask = 1 << LayerMask.NameToLayer("Balloon");
-
             var hits = Physics.RaycastAll(ShootTransform.position, ShootTransform.forward, Mathf.Infinity, layerMask);
 
             if (hits.Length > 0)

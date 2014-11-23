@@ -9,6 +9,7 @@ public class BalloonCluster : MonoBehaviour
     [HideInInspector]
     public Health health;
     public GameObject DamageParticlePrefab;
+    public Vector3 Velocity;
 
     public static OnPoppedDelegate BalloonPoppedEventGlobal;
 
@@ -28,15 +29,7 @@ public class BalloonCluster : MonoBehaviour
 
     void FixedUpdate()
     {
-        Vector3 newVel = Vector3.ClampMagnitude(rigidbody.velocity, 30f);
-
-        if (GameController.Fast)
-        {
-            newVel *= 1.5f;
-        }
-
-        rigidbody.velocity = newVel;
-
+        rigidbody.velocity = Velocity * speedMult * (GameController.Fast ? 1.5f : 1f);
     }
 
     void OnCollisionEnter(Collision c)
@@ -70,11 +63,8 @@ public class BalloonCluster : MonoBehaviour
 
             Vector3 randomDirection = UnityEngine.Random.onUnitSphere;
 
-            c1.transform.position += randomDirection * c1.collider.bounds.extents.x;
-            c2.transform.position += -randomDirection * c2.collider.bounds.extents.x;
-
-            c1.rigidbody.velocity = randomDirection * UnityEngine.Random.Range(10f, 30f);
-            c2.rigidbody.velocity = -randomDirection * UnityEngine.Random.Range(10f, 30f);
+            c1.GetComponent<BalloonCluster>().Velocity = randomDirection * UnityEngine.Random.Range(5f, 15f);
+            c2.GetComponent<BalloonCluster>().Velocity = -randomDirection * UnityEngine.Random.Range(5f, 15f);
         }
 
         if (BalloonPoppedEventGlobal != null)
@@ -85,7 +75,7 @@ public class BalloonCluster : MonoBehaviour
 
     IEnumerator ModulateSpeedMultiplier()
     {
-        while(!health.Dead)
+        while(health.Alive)
         {
             speedMult = Mathf.Sin(sinParam) + 1.5f;
             sinParam += Time.deltaTime;

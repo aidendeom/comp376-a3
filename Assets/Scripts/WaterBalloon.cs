@@ -4,6 +4,19 @@ using System.Collections;
 public class WaterBalloon : MonoBehaviour
 {
     public int Damage = 100;
+    [HideInInspector]
+    public Health Health;
+
+    void Start()
+    {
+        Health = GetComponent<Health>();
+        Health.OnKilled += OnKill;
+    }
+
+    private void OnKill()
+    {
+        Destroy(gameObject);
+    }
 
     void OnCollisionEnter(Collision c)
     {

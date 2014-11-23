@@ -34,6 +34,8 @@ public class GameController : MonoBehaviour
     public Transform HABSpawnLocation;
     public GameObject HABPrefab;
 
+    public Transform MainCamAnchor;
+
     private int totalBalloons;
     private int balloonsPopped = 0;
 
@@ -68,21 +70,32 @@ public class GameController : MonoBehaviour
 
     private void StartMenu()
     {
+        Screen.lockCursor = false;
+
         livesLeft = PlayerLives;
         currentSplits = 0;
         CurrentScore = 0;
         currentState = GameState.Menu;
 
+        Transform mainCamTrans = Camera.main.transform;
+        mainCamTrans.parent = null;
+        mainCamTrans.position = MainCamAnchor.position;
+        mainCamTrans.rotation = MainCamAnchor.rotation;
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+            Destroy(player);
+
         BalloonCluster[] balloons = GameObject.FindObjectsOfType<BalloonCluster>();
         foreach (var b in balloons)
         {
-            Destroy(b);
+            Destroy(b.gameObject);
         }
 
         HotAirBalloonController[] HABs = GameObject.FindObjectsOfType<HotAirBalloonController>();
         foreach (var b in HABs)
         {
-            Destroy(b);
+            Destroy(b.gameObject);
         }
 
         StartCoroutine("MenuCoroutine");
@@ -121,6 +134,7 @@ public class GameController : MonoBehaviour
         if (balloonsPopped >= totalBalloons)
         {
             currentState = GameState.Won;
+            StartCoroutine("DelayMenu");
         }
     }
 
