@@ -22,6 +22,7 @@ public class Health : MonoBehaviour
     public int CurrentHealth { get; private set; }
     public bool Dead { get; private set; }
     public bool Alive { get { return !Dead; } }
+    public bool Invincible = false;
 
     public OnKilledDelegate OnKilled = null;
     public OnTakeDamageDelegate OnTakeDamage = null;
@@ -34,17 +35,20 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(DamageArgs args)
     {
-        int previousHealth = CurrentHealth;
-        CurrentHealth -= args.amount;
-
-        if (OnTakeDamage != null)
-            OnTakeDamage(args);
-
-        if (CurrentHealth <= 0 && previousHealth > 0)
+        if (!Invincible)
         {
-            Dead = true;
-            if (OnKilled != null)
-                OnKilled();
+            int previousHealth = CurrentHealth;
+            CurrentHealth -= args.amount;
+
+            if (OnTakeDamage != null)
+                OnTakeDamage(args);
+
+            if (CurrentHealth <= 0 && previousHealth > 0)
+            {
+                Dead = true;
+                if (OnKilled != null)
+                    OnKilled();
+            }
         }
     }
 }

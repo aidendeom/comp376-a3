@@ -11,11 +11,14 @@ public class HotAirBalloonController : MonoBehaviour
     public float MoveSpeed = 5f;
     public GameObject DamagePrefab;
     public GameObject DestroyPrefab;
+    public AudioClip FireClip;
+    public AudioClip DestroyClip;
 
     private Transform playerTrans;
     new private Transform transform;
     new private Rigidbody rigidbody;
     private Health health;
+    private float yCoord;
 
     void Start()
     {
@@ -25,6 +28,8 @@ public class HotAirBalloonController : MonoBehaviour
         health = GetComponent<Health>();
         health.OnTakeDamage += OnTakeDamage;
         health.OnKilled += OnKill;
+
+        yCoord = transform.position.y;
 
         StartCoroutine(FireTurret());
     }
@@ -66,6 +71,13 @@ public class HotAirBalloonController : MonoBehaviour
 
         Vector3 dir = (playerPlanePos - transform.position).normalized;
         rigidbody.AddForce(dir * MoveSpeed, ForceMode.Acceleration);
+
+        if (health.Alive)
+        {
+            Vector3 pos = transform.position;
+            pos.y = yCoord;
+            transform.position = pos;
+        }
     }
 
     private IEnumerator FireTurret()
@@ -79,6 +91,12 @@ public class HotAirBalloonController : MonoBehaviour
                 Vector3 shotDirection = (playerTrans.position - GunTrans.position).normalized;
 
                 b.rigidbody.velocity = shotDirection * ShotPower;
+
+                GameObject go = new GameObject("Fire audio");
+                var source = go.AddComponent<AudioSource>();
+                source.clip = FireClip;
+                source.Play();
+                Destroy(go, 2f);
 
                 yield return new WaitForSeconds(ShotDelay);
             }
@@ -109,6 +127,12 @@ public class HotAirBalloonController : MonoBehaviour
         particles.transform.parent = transform;
 
         gameObject.layer = 0;
+
+        GameObject go = new GameObject("PExplosion audio");
+        var source = go.AddComponent<AudioSource>();
+        source.clip = DestroyClip;
+        source.Play();
+        Destroy(go, 5f);
 
         Destroy(particles, 5f);
 

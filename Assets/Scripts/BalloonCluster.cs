@@ -10,6 +10,7 @@ public class BalloonCluster : MonoBehaviour
     public Health health;
     public GameObject DamageParticlePrefab;
     public Vector3 Velocity;
+    public AudioSource Audio;
 
     public static OnPoppedDelegate BalloonPoppedEventGlobal;
 
@@ -24,6 +25,7 @@ public class BalloonCluster : MonoBehaviour
         health.OnTakeDamage += OnTakeDamage;
 
         rigidbody = GetComponent<Rigidbody>();
+        Audio = GetComponent<AudioSource>();
         StartCoroutine(ModulateSpeedMultiplier());
     }
 
@@ -66,6 +68,12 @@ public class BalloonCluster : MonoBehaviour
             c1.GetComponent<BalloonCluster>().Velocity = randomDirection * UnityEngine.Random.Range(5f, 15f);
             c2.GetComponent<BalloonCluster>().Velocity = -randomDirection * UnityEngine.Random.Range(5f, 15f);
         }
+
+        GameObject go = new GameObject("Pop audio");
+        var source = go.AddComponent<AudioSource>();
+        source.clip = Audio.clip;
+        source.Play();
+        Destroy(go, 1.5f);
 
         if (BalloonPoppedEventGlobal != null)
             BalloonPoppedEventGlobal(NextCluster != null);

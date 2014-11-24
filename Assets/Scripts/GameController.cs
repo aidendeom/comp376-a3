@@ -35,6 +35,13 @@ public class GameController : MonoBehaviour
     public GameObject HABPrefab;
 
     public Transform MainCamAnchor;
+    public Transform BossSpawnAnchor;
+    public GameObject BossPrefab;
+    public AudioClip Music;
+    public AudioClip BossMusic;
+    public GameObject Sun;
+
+    private AudioSource _audioSource;
 
     private int totalBalloons;
     private int balloonsPopped = 0;
@@ -52,6 +59,9 @@ public class GameController : MonoBehaviour
                  secondHAB = false,
                  thirdHAB = false;
 
+    private bool bossSpawned = false;
+    private Health _bossHealth;
+
     void Start()
     {
         BalloonCluster.BalloonPoppedEventGlobal += OnBalloonPop;
@@ -65,6 +75,8 @@ public class GameController : MonoBehaviour
 
         spawners = GameObject.FindObjectsOfType<ClusterSpawner>();
 
+        _audioSource = GetComponent<AudioSource>();
+
         StartMenu();
     }
 
@@ -72,8 +84,14 @@ public class GameController : MonoBehaviour
     {
         Screen.lockCursor = false;
 
+        Sun.SetActive(true);
+
+        _audioSource.clip = Music;
+        _audioSource.Play();
+
         livesLeft = PlayerLives;
         currentSplits = 0;
+        balloonsPopped = 0;
         CurrentScore = 0;
         currentState = GameState.Menu;
 
@@ -97,6 +115,11 @@ public class GameController : MonoBehaviour
         {
             Destroy(b.gameObject);
         }
+
+        var boss = GameObject.FindGameObjectWithTag("Boss");
+        if (boss != null)
+            Destroy(boss);
+        bossSpawned = false;
 
         StartCoroutine("MenuCoroutine");
     }
@@ -133,9 +156,45 @@ public class GameController : MonoBehaviour
 
         if (balloonsPopped >= totalBalloons)
         {
-            currentState = GameState.Won;
-            StartCoroutine("DelayMenu");
+            SpawnBoss();
         }
+    }
+
+    void SpawnBoss()
+    {
+        Sun.SetActive(false);
+        var boss = (GameObject)Instantiate(BossPrefab, BossSpawnAnchor.position, Quaternion.identity);
+        _bossHealth = boss.GetComponentInChildren<Health>();
+        _bossHealth.OnKilled += OnBossKilled;
+        StartCoroutine(FadeMusic(2f, BossMusic));
+        bossSpawned = true;
+    }
+
+    void OnBossKilled()
+    {
+        CurrentScore += 100;
+        StartCoroutine(FadeMusic(0.5f, null));
+        StartCoroutine(DelayWin());
+    }
+
+    IEnumerator FadeMusic(float fadeTime, AudioClip clip)
+    {
+        float startTime = Time.time;
+        while (Time.time - startTime < fadeTime)
+        {
+            _audioSource.volume = Mathf.Lerp(1f, 0f, (Time.time - startTime) / fadeTime);
+            yield return null;
+        }
+        _audioSource.volume = 1;
+        _audioSource.clip = clip;
+        _audioSource.Play();
+    }
+
+    IEnumerator DelayWin()
+    {
+        yield return new WaitForSeconds(5f);
+        currentState = GameState.Won;
+        StartCoroutine("DelayMenu");
     }
 
     void TrySpawnHAB()
@@ -169,6 +228,12 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public Texture2D BarEmpty;
+    public Texture2D BarFull;
+
+    private Rect bossBar = new Rect((Screen.width - 300) / 2f, 25, 300, 75);
+    private GUIStyle noStyle = new GUIStyle();
+
     void OnGUI()
     {
         if (currentState == GameState.Menu)
@@ -194,6 +259,14 @@ public class GameController : MonoBehaviour
                 StopCoroutine("MenuCoroutine");
                 StartGame();
             }
+
+            Rect ButtonRect2 = new Rect(Screen.width / 2f - 150, Screen.height / 2f, 300, 300);
+            ButtonStyle.normal.textColor = Color.red;
+
+            if (GUI.Button(ButtonRect2, "Exit", ButtonStyle))
+            {
+                Application.Quit();
+            }
         }
         else
         {
@@ -215,13 +288,27 @@ public class GameController : MonoBehaviour
             livesStyle.alignment = TextAnchor.UpperRight;
             GUI.Label(livesPos, livesContent, livesStyle);
 
+            if (bossSpawned)
+            {
+                float barDisplay = (float)_bossHealth.CurrentHealth / _bossHealth.MaxHealth;
+
+                GUI.BeginGroup(bossBar);
+                GUI.Box(new Rect(0, 0, bossBar.size.x, bossBar.size.y), BarEmpty, noStyle);
+
+                GUI.BeginGroup(new Rect(0, 0, bossBar.size.x * barDisplay, bossBar.size.y));
+                GUI.Box(new Rect(0, 0, bossBar.size.x, bossBar.size.y), BarFull, noStyle);
+                GUI.EndGroup();
+
+                GUI.EndGroup();
+            }
+
             // Victory / Loss
             if (currentState != GameState.Ongoing)
             {
                 Rect resultPos = new Rect(Screen.width / 2f, Screen.height / 2f, 10, 10);
                 string resultString = "Nothing!";
                 if (currentState == GameState.Won)
-                    resultString = "You Win!";
+                    resultString = "Victory is Yours!";
                 else if (currentState == GameState.Lost)
                     resultString = "You Lose!";
 

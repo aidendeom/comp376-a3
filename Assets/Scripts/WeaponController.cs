@@ -11,6 +11,8 @@ public class WeaponController : MonoBehaviour
     public int Damage = 1;
     public Texture CrosshairTexture = null;
 
+    private AudioSource _audio;
+
     private int layerMask = 1 << LayerMask.NameToLayer("Balloon")
         | 1 << LayerMask.NameToLayer("HAB");
 
@@ -26,9 +28,23 @@ public class WeaponController : MonoBehaviour
         get { return Time.time - lastShot > SecondsPerShot; }
     }
 
+    void Start()
+    {
+        _audio = GetComponent<AudioSource>();
+    }
+
     void Update()
     {
         bool shoot = Input.GetMouseButton(0);
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            _audio.Play();
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            _audio.Stop();
+        }
 
         RightGun.SetBool("Shoot", shoot);
         LeftGun.SetBool("Shoot", shoot);
@@ -51,7 +67,7 @@ public class WeaponController : MonoBehaviour
 
                 // This is the first balloon hit
                 var hit = hits[0];
-                var health = hit.collider.GetComponent<Health>();
+                var health = hit.collider.GetComponentInParent<Health>();
 
                 if (health != null)
                 {
@@ -72,6 +88,7 @@ public class WeaponController : MonoBehaviour
     {
         RightGun.SetBool("Shoot", false);
         LeftGun.SetBool("Shoot", false);
+        _audio.Stop();
     }
 
     void OnGUI()
